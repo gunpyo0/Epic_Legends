@@ -5,9 +5,13 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
-    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float moveSpeed;
+    [SerializeField] private float maxSpeed = 7f;
     [SerializeField] private float jumpForce = 10f;
     [SerializeField] private int jumpCount = 0;
+    [SerializeField] private float startInertiaTime = 0.5f;
+    [SerializeField] private float inertiaTimer = 0f;
+    [SerializeField] private float jumpInputTime = 2f;
     [SerializeField] private bool isFirstJumping = false;
     
     [Header("GameObject")]
@@ -29,18 +33,16 @@ public class PlayerController : MonoBehaviour
     private CapsuleCollider2D capsuleCollider;
     private Rigidbody2D playerRigidbody;
 
-    private GameManager gameManager = GameManager.Instance;
-
     private WaitForSeconds coyoteDuration;
     private WaitForSeconds firstJumpDuration;
-    private const float firstJumpTime = 0.1f;
+    private const float FIRST_JUMP_TIME = 0.1f;
 
     private void Start()
     {
         playerRigidbody = GetComponent<Rigidbody2D>();
         capsuleCollider = GetComponent<CapsuleCollider2D>();
         coyoteDuration = new WaitForSeconds(coyoteTime);
-        firstJumpDuration = new WaitForSeconds(firstJumpTime);
+        firstJumpDuration = new WaitForSeconds(FIRST_JUMP_TIME);
     }
 
     private void Update()
@@ -89,20 +91,38 @@ public class PlayerController : MonoBehaviour
 
     private void Move()
     {
-        float inputH = Input.GetAxis("Horizontal");
+        float inputH = Input.GetAxisRaw("Horizontal");
 
         bool playerMoving = inputH != 0;
         if (playerMoving)
         {
             FireRotate(inputH);
+            Inertia();
             playerRigidbody.velocity = new Vector2(inputH * moveSpeed, playerRigidbody.velocity.y);
-
         }
         else
         {
-            playerRigidbody.velocity = new Vector2(0, playerRigidbody.velocity.y);
+            if(isGround)
+                playerRigidbody.velocity = new Vector2(0, playerRigidbody.velocity.y);
+            inertiaTimer = 0f;
+            moveSpeed = maxSpeed / 2;
         }
     }
+
+
+    private void Inertia()
+    {
+        inertiaTimer += Time.deltaTime;
+        if(inertiaTimer <= startInertiaTime)
+        {
+            moveSpeed = Mathf.Lerp(maxSpeed / 2, maxSpeed, inertiaTimer);
+        }else
+        {
+            inertiaTimer = 0.5f;
+            moveSpeed = maxSpeed;
+        }
+    }
+
 
     private void JumpInput()
     {
