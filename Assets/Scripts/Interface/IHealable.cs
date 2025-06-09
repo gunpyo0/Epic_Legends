@@ -2,10 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyHp : Hp
+public interface IHealable
 {
-    protected override void Die()
-    {
 
-    }
+    void Heal(float amount);
 }
