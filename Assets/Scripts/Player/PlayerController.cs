@@ -1,9 +1,10 @@
-using System.Collections;
+癤퓎sing System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+
     [Header("Movement")]
     [SerializeField] private KeyCode leftKey;
     [SerializeField] private KeyCode rightKey;
@@ -12,19 +13,19 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private AnimationCurve moveCurve;
     [SerializeField] private float airRes;
     private float moveDir = 0;
+    private KeyCode lastUsedKey;
     // for timer
     private bool onMoving;
     private float movingCounter;
-    /*[SerializeField] private float moveSpeed;
-    [SerializeField] private float maxSpeed = 7f;
-    [SerializeField] private float startInertiaTime = 0.5f;
-    [SerializeField] private float inertiaTimer = 0f;*/
 
     [Header("Jump")]
+    [SerializeField] private KeyCode jumpKey;
     [SerializeField] private float jumpBufferTime = 0.1f;
-    [SerializeField] private float maxJumpInput = 0.6f;
     [SerializeField] private float jumpForce;
+    [SerializeField] private float jumpTime;
+    [SerializeField] private float addedPower = 2; // jump time for curve evaluation
     [SerializeField] private AnimationCurve jumpCurve;
+    private bool isJumpingFrame=false;
 
     [Header("Multiple Jump")]
     [SerializeField] private int maxJumpCount = 2;
@@ -38,22 +39,10 @@ public class PlayerController : MonoBehaviour
     private bool onJumping;
     private float jumpCounter;
 
-    [Header("GameObject")]
+    [Header("GameObject & Script")]
     [SerializeField] private GameObject fireRotation;
-    [SerializeField] private Transform groundCheckObj;
+    [SerializeField]  private GroundCheckBox groundchecker;
 
-    [Header("Raycast")]
-    [SerializeField] private LayerMask groundLayer;
-    [SerializeField] private LayerMask semiSolidLayer;
-    private RaycastHit2D groundHit;
-    private RaycastHit2D semiSolidHit;
-    private bool isGround = false;
-    private bool isSemiSolid = false;
-    
-
-    [Header("Coyote Time")]
-    [SerializeField] private float coyoteTime = 0.1f;
-    [SerializeField] private bool isCoyote = false;
 
     private CapsuleCollider2D capsuleCollider;
     private Rigidbody2D playerRigidbody;
@@ -66,47 +55,47 @@ public class PlayerController : MonoBehaviour
     {
         playerRigidbody = GetComponent<Rigidbody2D>();
         capsuleCollider = GetComponent<CapsuleCollider2D>();
-        coyoteDuration = new WaitForSeconds(coyoteTime);
         firstJumpDuration = new WaitForSeconds(FIRST_JUMP_TIME);
     }
 
     private void Update()
     {
-        CheckGround();
-        //Move();
-        newMove();
+        // jump action should be called before move action
         JumpInput();
         JumpAction();
+
+        //move action
+        Move();
     }
 
-    private void CheckGround()
+    void Move()
     {
-        float rayLength = 0.05f;
-
-        groundHit = Physics2D.Raycast(groundCheckObj.position, Vector2.down, rayLength, groundLayer);
-        
-        Debug.DrawRay(groundCheckObj.position, Vector2.down * rayLength, Color.red, 1f);
-        isGround = groundHit.collider != null;
-        isSemiSolid = isGround && groundHit.collider.CompareTag("SemiSolid");
-        bool isLanded = playerRigidbody.velocity.y == 0;
-
-        if (isSemiSolid && isLanded) jumpCount = 0;
-        if (isGround && !isFirstJumping && !isSemiSolid) jumpCount = 0;
-        if (!isGround && jumpCount == 0 && !isCoyote)
-        {
-            jumpCount = 0;
-            Debug.Log("1");
-            StartCoroutine(Coyote());
+        int movementInput=0;
+        // revise manipluation comfortability
+        if(Input.GetKey(leftKey) && Input.GetKey(rightKey)){
+            if (leftKey == lastUsedKey)
+                movementInput = -1;
+            else
+                movementInput = 1;
         }
-    }
+        else if (Input.GetKey(leftKey))
+        {
+            movementInput = -1;
+        }
+        else if (Input.GetKey(rightKey))
+        {
+            movementInput = 1;
+        }
+        if(Input.GetKeyDown(leftKey))
+            lastUsedKey = leftKey;
+        else if (Input.GetKeyDown(rightKey))
+            lastUsedKey = rightKey;
 
-    void newMove()
-    {
-        float inputH = Input.GetAxisRaw("Horizontal");
+        onMoving = movementInput == moveDir;
 
-        onMoving = inputH == moveDir;
 
-        if (isGround)
+        // actual velocity changes
+        if (groundchecker.IsGrounded)
         {
             
 
@@ -125,68 +114,23 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            playerRigidbody.AddForce(Vector2.right * inputH * maxSpeed * airRes, ForceMode2D.Force);
+            if (isJumpingFrame)
+            {
+                playerRigidbody.velocity = new Vector2(moveDir * maxSpeed, playerRigidbody.velocity.y);
+            }
+            else
+            {
+                playerRigidbody.AddForce(Vector2.right * movementInput * maxSpeed * airRes, ForceMode2D.Force);
+            }
             playerRigidbody.velocity = new Vector2(Mathf.Clamp(playerRigidbody.velocity.x, -maxSpeed, maxSpeed), playerRigidbody.velocity.y);
         }
-        moveDir = inputH;
+        moveDir = movementInput;
     }
-
-    IEnumerator FirstJump() // 처음에 점프 뛸 때 레이길이 콜라이더보다 좀 더 길게 줘서 연속점프가 가능하기에 만든 코루틴함수임 더 나은 방법 있으면 그걸로 ㄱ
-    {
-        isFirstJumping = true;
-
-        yield return firstJumpDuration;
-
-        isFirstJumping = false;
-    }
-
-    IEnumerator Coyote()
-    {
-        isCoyote = true;
-
-        yield return coyoteDuration;
-
-        isCoyote = false;
-    }
-
-    /*private void Move()
-    {
-        float inputH = Input.GetAxisRaw("Horizontal");
-
-        bool playerMoving = inputH != 0;
-        if (playerMoving)
-        {
-            FireRotate(inputH);
-            Inertia();
-            playerRigidbody.velocity = new Vector2(inputH * moveSpeed, playerRigidbody.velocity.y);
-        }
-        else
-        {
-            if(isGround)
-                playerRigidbody.velocity = new Vector2(0, playerRigidbody.velocity.y);
-            inertiaTimer = 0f;
-            moveSpeed = maxSpeed / 2;
-        }
-    }
-
-
-    private void Inertia()
-    {
-        inertiaTimer += Time.deltaTime;
-        if(inertiaTimer <= startInertiaTime)
-        {
-            moveSpeed = Mathf.Lerp(maxSpeed / 2, maxSpeed, inertiaTimer);
-        }else
-        {
-            inertiaTimer = 0.5f;
-            moveSpeed = maxSpeed;
-        }
-    }*/
 
 
     private void JumpInput()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(jumpKey))
         {
             jumpBufferCounter = jumpBufferTime;
             jumpCooldownTimer = 0;
@@ -204,6 +148,11 @@ public class PlayerController : MonoBehaviour
 
     private void JumpAction()
     {
+
+        if (groundchecker.IsGrounded)
+        {
+            jumpCount = 0;
+        }
         if (jumpBufferCounter > 0 && (jumpCount < maxJumpCount) && jumpCooldownTimer >= jumpCooldown)
         {
 
@@ -213,25 +162,34 @@ public class PlayerController : MonoBehaviour
             // for jump range system
             onJumping = true;
 
+            isJumpingFrame = true;
             jumpCount++;
-            if (jumpCount == 1) StartCoroutine(FirstJump());
             jumpBufferCounter = 0;
-            isCoyote = false;
+            jumpCounter = 0;
+
+            // particle
+            ParticleManager.Play("jump", transform.position);
+        }
+        else
+        {
+            isJumpingFrame = false;
         }
 
         // if jump action is triggered and player still holding key
         if (onJumping)
         {
+            if (playerRigidbody.velocity.y < 0)
+                onJumping = false;
             jumpCounter += Time.deltaTime;
+            playerRigidbody.AddForce(transform.up * jumpForce * jumpCurve.Evaluate(Mathf.Clamp(jumpCounter/ jumpTime,0,1)) * addedPower, ForceMode2D.Force);
         }
-        
+
         // if at the last moment of pressing the key
-        else if(jumpCounter != 0)
+        else if (jumpCounter != 0)
         {
-            var arrangedJumpCounter = Mathf.Clamp(jumpCounter, 0, maxJumpInput);
-            playerRigidbody.velocity = new Vector2(playerRigidbody.velocity.x, playerRigidbody.velocity.y * jumpCurve.Evaluate(arrangedJumpCounter / maxJumpInput));
-            jumpCounter = 0;
+
         }
+
     }
 
     private void FireRotate(float inputH)
@@ -248,27 +206,3 @@ public class PlayerController : MonoBehaviour
 
     }
 }
-
-//private void IsGround()
-//{ 
-//    hit = Physics2D.Raycast(transform.position, Vector2.down, rayLength, groundLayer);
-//    Debug.DrawRay(transform.position, Vector2.down * rayLength, Color.red, 1);
-//    isGround = hit.collider != null;
-
-//    if (isGround)
-//    {
-//        jumpCount = 0;
-//    }
-//}
-
-//private void Jump()
-//{
-
-//    if (Input.GetKeyDown(KeyCode.Space))
-//    {
-//        if (jumpCount >= 2) return;
-//        jumpCount++;
-//        playerRigidbody.velocity = Vector3.zero;
-//        playerRigidbody.AddForce(transform.up * jumpForce, ForceMode2D.Impulse);
-//    }
-//}
