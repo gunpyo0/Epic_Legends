@@ -22,7 +22,7 @@ public class PlayerAttack : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R) && !isCooldown)
         {
             GameObject bullet = Instantiate(bulletPrefab, firePos.position, fireRotate.rotation);
-            bullet.GetComponent<Bullet>().SetUp(fireRotate);
+            //bullet.GetComponent<Bullet>().SetUp(fireRotate);
             StartCoroutine(Cooldown());
         }
     }
