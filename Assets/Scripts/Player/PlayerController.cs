@@ -40,6 +40,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("GameObject")]
     [SerializeField] private GameObject fireRotation;
+    [SerializeField] private Transform groundCheckObj;
 
     [Header("Raycast")]
     [SerializeField] private LayerMask groundLayer;
@@ -47,6 +48,7 @@ public class PlayerController : MonoBehaviour
     private RaycastHit2D groundHit;
     private RaycastHit2D semiSolidHit;
     private bool isGround = false;
+    private bool isSemiSolid = false;
     
 
     [Header("Coyote Time")]
@@ -79,14 +81,17 @@ public class PlayerController : MonoBehaviour
 
     private void CheckGround()
     {
-        float rayLength = capsuleCollider.bounds.extents.y + 0.05f;
+        float rayLength = 0.05f;
 
-        groundHit = Physics2D.Raycast(transform.position, Vector2.down, rayLength, groundLayer);
+        groundHit = Physics2D.Raycast(groundCheckObj.position, Vector2.down, rayLength, groundLayer);
         
-        Debug.DrawRay(transform.position, Vector2.down * rayLength, Color.red, 1f);
+        Debug.DrawRay(groundCheckObj.position, Vector2.down * rayLength, Color.red, 1f);
         isGround = groundHit.collider != null;
+        isSemiSolid = isGround && groundHit.collider.CompareTag("SemiSolid");
+        bool isLanded = playerRigidbody.velocity.y == 0;
 
-        if (isGround && !isFirstJumping) jumpCount = 0;
+        if (isSemiSolid && isLanded) jumpCount = 0;
+        if (isGround && !isFirstJumping && !isSemiSolid) jumpCount = 0;
         if (!isGround && jumpCount == 0 && !isCoyote)
         {
             jumpCount = 0;
