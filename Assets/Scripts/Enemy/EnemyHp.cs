@@ -2,25 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-<<<<<<< Updated upstream
 public class EnemyHp : Hp
 {
+
+    private Reward reward;
+
+    private void Start()
+    {
+        reward = GetComponent<Reward>();
+    }
+
     protected override void Die()
     {
-
-    }
-=======
-public class EnemyHp : Hp, IRewardable
-{
-    protected override void Die()
-    {
-        Reward();
+        reward.GiveReward();
+        Destroy(gameObject);
     }
 
-    public void Reward()
-    {
-        
-    }
-
->>>>>>> Stashed changes
 }

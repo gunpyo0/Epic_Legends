@@ -163,7 +163,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
-  speed: 3
+  isPlayerShoot: 0
+  color: {fileID: 11400000, guid: eea0000dee3a63e4c83e1fcca73a9309, type: 2}
 --- !u!114 &1879288997017342841
 MonoBehaviour:
   m_ObjectHideFlags: 0

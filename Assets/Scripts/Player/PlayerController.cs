@@ -105,6 +105,7 @@ public class PlayerController : MonoBehaviour
         float inputH = Input.GetAxisRaw("Horizontal");
 
         onMoving = inputH == moveDir;
+        FireRotate(inputH);
 
         if (isGround)
         {

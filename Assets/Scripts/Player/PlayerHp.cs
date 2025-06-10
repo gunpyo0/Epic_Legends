@@ -15,9 +15,4 @@ public class PlayerHp : Hp, IHealable
     {
         Debug.Log("Á×À½");
     }
-<<<<<<< Updated upstream
-    
-=======
-
->>>>>>> Stashed changes
 }

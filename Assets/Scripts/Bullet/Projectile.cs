@@ -6,6 +6,10 @@ using UnityEngine;
 public class Projectile : MonoBehaviour
 {
     [SerializeField] private float damage;
+    [SerializeField] private bool isPlayerShoot = false;
+    [SerializeField] private Item color;
+    
+    public bool IsPlayerShoot { set { isPlayerShoot = value; } }
     public float Damage { set { damage = value; } }
 
     // Start is called before the first frame update
@@ -28,11 +32,22 @@ public class Projectile : MonoBehaviour
     {
         if (collision.CompareTag("Player"))
         {
+            if (isPlayerShoot) return;
             collision.GetComponent<PlayerHp>().TakeDamage(damage);
+            ObjectPoolingManager.ReturnObject(this);
+            Debug.Log("플레이어 닿음");
+        }
+        else if (collision.CompareTag("Enemy"))
+        {
+            if (!isPlayerShoot) return;
+            collision.GetComponent<EnemyHp>().TakeDamage(damage);
+            collision.GetComponent<Reward>().LastFragColor = color;
+            isPlayerShoot = false;
             ObjectPoolingManager.ReturnObject(this);
         }
         else
         {
+            Debug.Log("1");
             ObjectPoolingManager.ReturnObject(this);
         }
     }

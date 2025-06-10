@@ -2,11 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-<<<<<<< Updated upstream
 public abstract class Hp : MonoBehaviour 
-=======
-public abstract class Hp : MonoBehaviour
->>>>>>> Stashed changes
 {
     [SerializeField] protected float maxHp;
     protected float currentHp;
@@ -16,11 +12,6 @@ public abstract class Hp : MonoBehaviour
     protected const float effectDurationTime = 0.25f;
 
     protected bool isDead;
-<<<<<<< Updated upstream
-    
-=======
-
->>>>>>> Stashed changes
     protected virtual void Awake()
     {
         currentHp = maxHp;
