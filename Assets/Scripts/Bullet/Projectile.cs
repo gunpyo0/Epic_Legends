@@ -47,6 +47,7 @@ public class Projectile : MonoBehaviour
         }
         else
         {
+            if (collision.GetComponent<Projectile>() != null) return;
             Debug.Log("1");
             ObjectPoolingManager.ReturnObject(this);
         }

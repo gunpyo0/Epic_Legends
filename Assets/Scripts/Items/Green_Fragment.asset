@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: Green_Fragment
   m_EditorClassIdentifier: 
   itemType: 0
-  itemName: Green_Fragment
+  itemName: GreenFragment
   icon: {fileID: 0}
+  canDuplicate: 0

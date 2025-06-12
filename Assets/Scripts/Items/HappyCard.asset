@@ -9,10 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b798d96d1554a2488f4df49cf374e60, type: 3}
-  m_Name: Red_Fragment
+  m_Script: {fileID: 11500000, guid: b0680c58a4f272c42b6c2eecc2dc33c7, type: 3}
+  m_Name: HappyCard
   m_EditorClassIdentifier: 
-  itemType: 0
-  itemName: RedFragment
+  itemType: 1
+  itemName: HappyCard
   icon: {fileID: 0}
-  canDuplicate: 0
+  canDuplicate: 1
+  effect: {fileID: 11400000, guid: 130221feef2539a4d8589fad156cfb64, type: 2}
+  customDuration: 30

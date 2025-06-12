@@ -31,8 +31,9 @@ public class PlayerAttack : MonoBehaviour
             var bullet = ObjectPoolingManager.GetObject(projectileGroup);
             bullet.GetComponent<Projectile>().IsPlayerShoot = true;
             bullet.GetComponent<Projectile>().Damage = damage;
-            bullet.GetComponent<Movement>().MoveDirection = Vector3.right;
+            bullet.GetComponent<Movement>().MoveDirection = firePos.right;
             bullet.GetComponent<Movement>().MoveSpeed = bulletSpeed;
+            bullet.transform.parent = null;
             StartCoroutine(Cooldown());
         }
     }
@@ -43,4 +44,6 @@ public class PlayerAttack : MonoBehaviour
         yield return duration;
         isCooldown = false;
     }
+
+    
 }

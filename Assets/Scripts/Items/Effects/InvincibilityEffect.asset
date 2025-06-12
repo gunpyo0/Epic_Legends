@@ -9,10 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b798d96d1554a2488f4df49cf374e60, type: 3}
-  m_Name: Red_Fragment
+  m_Script: {fileID: 11500000, guid: 209e322d37a625e47a2b95fa1a83a73f, type: 3}
+  m_Name: InvincibilityEffect
   m_EditorClassIdentifier: 
-  itemType: 0
-  itemName: RedFragment
-  icon: {fileID: 0}
-  canDuplicate: 0
+  defaultDuration: 30
