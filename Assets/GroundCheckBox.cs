@@ -3,36 +3,68 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D))]
 public class GroundCheckBox : MonoBehaviour
 {
-    [Header("지면 체크용 위치")]
-    [SerializeField] private Transform groundCheckPoint;
+    public static GroundCheckBox now;
 
-    [Header("박스 크기 및 오프셋 & 레이어")]
-    [SerializeField] private Vector2 boxSize = new Vector2(0.5f, 0.1f);
-    [SerializeField] private Vector3 boxOffset = new Vector2(0f, 0f);
+    [Header("test use")]
+    [SerializeField] bool showGizmo = false;
 
-    [Tooltip("지면으로 간주할 레이어")]
+    [Header("checkpoint")]
+    [SerializeField] private Transform GCPoint;
+    [SerializeField] private Transform UGCPoint;
+
+    [Header("adjusting properties")]
+    [SerializeField] private Vector2 GCboxSize = new Vector2(0.5f, 0.1f);
+    [SerializeField] private Vector3 GCboxOffset = new Vector2(0f, 0f);
+
+    [SerializeField] private Vector2 UGCboxSize = new Vector2(0.5f, 0.1f);
+    [SerializeField] private Vector3 UGCboxOffset = new Vector2(0f, 0f);
+
     [SerializeField] private LayerMask groundLayer;
 
-    /// <summary>지면에 닿아 있으면 true</summary>
     public bool IsGrounded { get; private set; }
 
     void FixedUpdate()
     {
         // groundCheckPoint 위치를 중심으로 boxSize 크기의 박스 영역에 groundLayer가 있으면 true
-        Collider2D hit = Physics2D.OverlapBox(
-            groundCheckPoint.position+ boxOffset,
-            boxSize,
+        Collider2D GChit = Physics2D.OverlapBox(
+            GCPoint.position+ GCboxOffset,
+            GCboxSize,
             0f,
             groundLayer
         );
-        IsGrounded = hit != null;
+
+        Collider2D UGChit = Physics2D.OverlapBox(
+            UGCPoint.position + UGCboxOffset,
+            UGCboxSize,
+            0f,
+            groundLayer
+        );
+
+        IsGrounded = (GChit != null && UGChit == null);
     }
 
     // 씬 뷰에서 체크 영역 시각화
     void OnDrawGizmosSelected()
     {
-        if (groundCheckPoint == null) return;
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireCube(groundCheckPoint.position+ boxOffset, boxSize);
+        if (showGizmo)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireCube(GCPoint.position + GCboxOffset, GCboxSize);
+
+            Gizmos.color = Color.blue;
+            Gizmos.DrawWireCube(UGCPoint.position + UGCboxOffset, UGCboxSize);
+        }
+    }
+
+    private void Awake()
+    {
+        if (now == null)
+        {
+            now = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 }
