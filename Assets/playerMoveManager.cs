@@ -96,6 +96,7 @@ public class playerMoveManager : MonoBehaviour
             if (!onMoving)
             {
                 accTimer = 0;
+                firstSpeed = PlayerController.now.rigid.velocity.x;
             }
         }
         else
