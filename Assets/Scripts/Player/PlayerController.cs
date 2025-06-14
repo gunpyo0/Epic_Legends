@@ -62,6 +62,7 @@ public class PlayerController : MonoBehaviour
 
     private CapsuleCollider2D capsuleCollider;
     private WaitForSeconds coyoteDuration;
+    private WaitForSeconds ignoreDuration;
     
     private void calcInput()
     {
@@ -118,15 +119,17 @@ public class PlayerController : MonoBehaviour
     IEnumerator colliderSetting()
     {
 
-        col.enabled = false;
-        yield return new WaitForSeconds(ignoreTime);
+        Physics2D.IgnoreCollision(col, GroundCheckBox.now.SemiGroundCol, true);
 
-        col.enabled = true;
+        yield return ignoreDuration;
+
+        Physics2D.IgnoreCollision(col, GroundCheckBox.now.SemiGroundCol, false);
     }
 
     private void Start()
     {
         capsuleCollider = GetComponent<CapsuleCollider2D>();
+        ignoreDuration = new WaitForSeconds(ignoreTime);
     }
 
     private void Update()

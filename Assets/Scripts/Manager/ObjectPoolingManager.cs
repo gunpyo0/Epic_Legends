@@ -7,7 +7,6 @@ public class ObjectPoolingManager : MonoBehaviour
     public static ObjectPoolingManager Instance;
 
     [SerializeField] private GameObject poolingObj;
-    [SerializeField] private Transform poolGroup;
 
     Queue<Projectile> poolingObjectQueue = new Queue<Projectile>();
 

@@ -7,6 +7,9 @@ public class GroundCheckBox : MonoBehaviour
 
     [Header("test use")]
     [SerializeField] bool showGizmo = false;
+    [SerializeField] private Collider2D semiGroundCol;
+
+    public Collider2D SemiGroundCol => semiGroundCol;
 
     [Header("checkpoint")]
     [SerializeField] private Transform CheckPoint;
@@ -23,6 +26,7 @@ public class GroundCheckBox : MonoBehaviour
 
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask semiGroundLayer;
+
 
     public bool IsGrounded;
     public bool isSemiGrounded;
@@ -54,6 +58,11 @@ public class GroundCheckBox : MonoBehaviour
 
         IsGrounded = (GChit != null && UGChit == null);
         isSemiGrounded = (UGChit == null && semiGChit != null);
+
+        if (isSemiGrounded)
+        {
+            semiGroundCol = semiGChit.gameObject.GetComponent<Collider2D>();
+        }
 
         // check collusion with wall
         Collider2D rightWallHit = Physics2D.OverlapBox(
