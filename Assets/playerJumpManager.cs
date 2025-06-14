@@ -8,7 +8,6 @@ public class playerJumpManager : MonoBehaviour
 
 
     [Header("Jump")]
-    [SerializeField] private KeyCode jumpKey;
     [SerializeField] private float jumpBufferTime = 0.1f;
     public bool isJumpingFrame = false;
 
@@ -32,7 +31,6 @@ public class playerJumpManager : MonoBehaviour
 
     // for timer
     private bool onJumping;
-    private float jumpCounter;
 
     public void calcJump()
     {
@@ -42,7 +40,7 @@ public class playerJumpManager : MonoBehaviour
 
     private void JumpInput()
     {
-        if (Input.GetKeyDown(jumpKey))
+        if (PlayerController.now.kM.get(PlayerController.KeyState.firstPressJump))
         {
             jumpBufferCounter = jumpBufferTime;
             jumpCooldownTimer = 0;
@@ -52,7 +50,7 @@ public class playerJumpManager : MonoBehaviour
             jumpBufferCounter -= Time.deltaTime;
         }
 
-        if (!Input.GetKey(KeyCode.Space))
+        if (!PlayerController.now.kM.get(PlayerController.KeyState.jump))
             onJumping = false;
 
         jumpCooldownTimer += Time.deltaTime;
@@ -79,7 +77,6 @@ public class playerJumpManager : MonoBehaviour
             isJumpingFrame = true;
             jumpCount++;
             jumpBufferCounter = 0;
-            jumpCounter = 0;
             firstJump = false;
 
             // particle
@@ -97,14 +94,13 @@ public class playerJumpManager : MonoBehaviour
         {
             if (yVelocity < 0)
                 onJumping = false;
-            jumpCounter += Time.deltaTime;
         }
         else
         {
             PlayerController.now.rigid.gravityScale = originGravity;
         }
 
-        if ((onJumping && yVelocity >= 0 && firstJump) || (yVelocity <= midAirAdjustRange && yVelocity >= -midAirAdjustRange))
+        if ((onJumping && yVelocity >= 0 && firstJump) || (yVelocity <= midAirAdjustRange && yVelocity >= -midAirAdjustRange) || playerMoveManager.now.wallSliding)
         {
             PlayerController.now.rigid.gravityScale = onGravity;
         }

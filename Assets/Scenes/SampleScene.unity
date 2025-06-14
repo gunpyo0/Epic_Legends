@@ -3384,7 +3384,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rigid: {fileID: 885115045}
+  leftKey: 97
+  rightKey: 100
+  jumpKey: 32
+  upKey: 119
+  downKey: 115
   fireRotation: {fileID: 1771108324}
+  col: {fileID: 885115051}
+  ignoreTime: 0.2
 --- !u!114 &885115049
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3450,15 +3457,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   showGizmo: 1
-  GCPoint: {fileID: 885115047}
-  UGCPoint: {fileID: 885115047}
+  CheckPoint: {fileID: 885115047}
   GCboxSize: {x: 0.85, y: 0.1}
   GCboxOffset: {x: 0, y: -0.47, z: 0}
   UGCboxSize: {x: 0.79, y: 0.82}
   UGCboxOffset: {x: 0, y: 0, z: 0}
+  wallSize: {x: 0.2, y: 0.68}
+  wallOffset: {x: 0.43, y: 0, z: 0}
   groundLayer:
     serializedVersion: 2
     m_Bits: 72
+  semiGroundLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  IsGrounded: 0
+  isSemiGrounded: 0
+  isrightWall: 0
+  isleftWall: 0
 --- !u!114 &885115053
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3483,8 +3498,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f77cae747e24c2743bc8acde96fa7ad5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  leftKey: 97
-  rightKey: 100
+  wallSliding: 0
   maxSpeed: 10
   accTime: 0.2
   accCurve:
@@ -3549,7 +3563,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b0dfe08aacd26d44909015552a2a6d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  jumpKey: 32
   jumpBufferTime: 0.1
   isJumpingFrame: 0
   jumpForce: 12
@@ -3572,7 +3585,7 @@ GameObject:
   - component: {fileID: 904409169}
   - component: {fileID: 904409168}
   m_Layer: 0
-  m_Name: Circle
+  m_Name: inspector
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3594,8 +3607,8 @@ MonoBehaviour:
   m_LightType: 3
   m_BlendStyleIndex: 0
   m_FalloffIntensity: 0.71
-  m_Color: {r: 0.9811321, g: 0.78127503, b: 0.61552155, a: 1}
-  m_Intensity: 2.85
+  m_Color: {r: 1, g: 0.58870965, b: 0.25, a: 1}
+  m_Intensity: 0.98
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
   m_ApplyToSortingLayers: 00000000
@@ -3616,8 +3629,8 @@ MonoBehaviour:
     m_Extent: {x: 0.9985302, y: 0.99853027, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
-  m_PointLightInnerRadius: 1.4087893
-  m_PointLightOuterRadius: 5.36
+  m_PointLightInnerRadius: 0.6999047
+  m_PointLightOuterRadius: 3.2637851
   m_ShapeLightParametricSides: 5
   m_ShapeLightParametricAngleOffset: 0
   m_ShapeLightParametricRadius: 1
@@ -3688,8 +3701,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 904409167}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.7151558, y: 0.0132152885, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: -0.014053551, w: 0.99990124}
+  m_LocalPosition: {x: -1.7151558, y: -1.4, z: -3.5}
   m_LocalScale: {x: 0.2, y: 0.2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3783,7 +3796,7 @@ GameObject:
   - component: {fileID: 1477295708}
   - component: {fileID: 1477295707}
   m_Layer: 0
-  m_Name: kgnwhsrm
+  m_Name: background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8861,6 +8874,16 @@ Tilemap:
   m_GameObject: {fileID: 1641059999}
   m_Enabled: 1
   m_Tiles:
+  - first: {x: -8, y: -3, z: 0}
+    second:
+      serializedVersion: 2
+      m_TileIndex: 0
+      m_TileSpriteIndex: 0
+      m_TileMatrixIndex: 0
+      m_TileColorIndex: 0
+      m_TileObjectToInstantiateIndex: 65535
+      dummyAlignment: 0
+      m_AllTileFlags: 1073741825
   - first: {x: 0, y: -1, z: 0}
     second:
       serializedVersion: 2
@@ -8953,21 +8976,21 @@ Tilemap:
       m_AllTileFlags: 1073741825
   m_AnimatedTiles: {}
   m_TileAssetArray:
-  - m_RefCount: 2
+  - m_RefCount: 3
     m_Data: {fileID: 11400000, guid: cc1dfa6f971c8d8438293a0b1507f3b6, type: 2}
   - m_RefCount: 5
     m_Data: {fileID: 11400000, guid: ee9888028c324b744a43c2c4952d5b23, type: 2}
   - m_RefCount: 2
     m_Data: {fileID: 11400000, guid: 27837c65468f3054e923f04a49e3f1df, type: 2}
   m_TileSpriteArray:
-  - m_RefCount: 2
+  - m_RefCount: 3
     m_Data: {fileID: 1611927094, guid: 728bf0da053c7e140b666b32e1b5f631, type: 3}
   - m_RefCount: 5
     m_Data: {fileID: -164776617, guid: 728bf0da053c7e140b666b32e1b5f631, type: 3}
   - m_RefCount: 2
     m_Data: {fileID: 158360035, guid: 728bf0da053c7e140b666b32e1b5f631, type: 3}
   m_TileMatrixArray:
-  - m_RefCount: 9
+  - m_RefCount: 10
     m_Data:
       e00: 1
       e01: 0
@@ -8986,13 +9009,13 @@ Tilemap:
       e32: 0
       e33: 1
   m_TileColorArray:
-  - m_RefCount: 9
+  - m_RefCount: 10
     m_Data: {r: 1, g: 1, b: 1, a: 1}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Origin: {x: 0, y: -1, z: 0}
-  m_Size: {x: 8, y: 4, z: 1}
+  m_Origin: {x: -8, y: -3, z: 0}
+  m_Size: {x: 16, y: 6, z: 1}
   m_TileAnchor: {x: 0.5, y: 0.5, z: 0}
   m_TileOrientation: 0
   m_TileOrientationMatrix:

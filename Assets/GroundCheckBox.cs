@@ -9,8 +9,7 @@ public class GroundCheckBox : MonoBehaviour
     [SerializeField] bool showGizmo = false;
 
     [Header("checkpoint")]
-    [SerializeField] private Transform GCPoint;
-    [SerializeField] private Transform UGCPoint;
+    [SerializeField] private Transform CheckPoint;
 
     [Header("adjusting properties")]
     [SerializeField] private Vector2 GCboxSize = new Vector2(0.5f, 0.1f);
@@ -19,28 +18,59 @@ public class GroundCheckBox : MonoBehaviour
     [SerializeField] private Vector2 UGCboxSize = new Vector2(0.5f, 0.1f);
     [SerializeField] private Vector3 UGCboxOffset = new Vector2(0f, 0f);
 
-    [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private Vector2 wallSize = new Vector2(0.5f, 0.1f);
+    [SerializeField] private Vector3 wallOffset = new Vector2(0f, 0f);
 
-    public bool IsGrounded { get; private set; }
+    [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private LayerMask semiGroundLayer;
+
+    public bool IsGrounded;
+    public bool isSemiGrounded;
+    public bool isrightWall;
+    public bool isleftWall;
 
     void FixedUpdate()
     {
-        // groundCheckPoint 위치를 중심으로 boxSize 크기의 박스 영역에 groundLayer가 있으면 true
+        // check grounded
         Collider2D GChit = Physics2D.OverlapBox(
-            GCPoint.position+ GCboxOffset,
+            CheckPoint.position+ GCboxOffset,
             GCboxSize,
             0f,
             groundLayer
         );
+        Collider2D semiGChit = Physics2D.OverlapBox(
+            CheckPoint.position + GCboxOffset,
+            GCboxSize,
+            0f,
+            semiGroundLayer
+        );
 
         Collider2D UGChit = Physics2D.OverlapBox(
-            UGCPoint.position + UGCboxOffset,
+            CheckPoint.position + UGCboxOffset,
             UGCboxSize,
             0f,
             groundLayer
         );
 
         IsGrounded = (GChit != null && UGChit == null);
+        isSemiGrounded = (UGChit == null && semiGChit != null);
+
+        // check collusion with wall
+        Collider2D rightWallHit = Physics2D.OverlapBox(
+            CheckPoint.position + wallOffset,
+            wallSize,
+            0f,
+            groundLayer
+        );
+        isrightWall = rightWallHit != null;
+
+        Collider2D leftWallHit = Physics2D.OverlapBox(
+            CheckPoint.position + new Vector3(-wallOffset.x, wallOffset.y, 0),
+            wallSize,
+            0f,
+            groundLayer
+        );
+        isleftWall = leftWallHit != null;
     }
 
     // 씬 뷰에서 체크 영역 시각화
@@ -49,10 +79,14 @@ public class GroundCheckBox : MonoBehaviour
         if (showGizmo)
         {
             Gizmos.color = Color.yellow;
-            Gizmos.DrawWireCube(GCPoint.position + GCboxOffset, GCboxSize);
+            Gizmos.DrawWireCube(CheckPoint.position + GCboxOffset, GCboxSize);
 
             Gizmos.color = Color.blue;
-            Gizmos.DrawWireCube(UGCPoint.position + UGCboxOffset, UGCboxSize);
+            Gizmos.DrawWireCube(CheckPoint.position + UGCboxOffset, UGCboxSize);
+
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireCube(CheckPoint.position + wallOffset, wallSize);
+            Gizmos.DrawWireCube(CheckPoint.position + new Vector3(-wallOffset.x, wallOffset.y, 0), wallSize);
         }
     }
 

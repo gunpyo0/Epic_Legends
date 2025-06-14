@@ -5,10 +5,9 @@ using UnityEngine;
 public class playerMoveManager : MonoBehaviour
 {
     public static playerMoveManager now;
+    public bool wallSliding = false;
 
     [Header("Movement")]
-    [SerializeField] private KeyCode leftKey;
-    [SerializeField] private KeyCode rightKey;
     [SerializeField] private float maxSpeed;
 
     [SerializeField] private float accTime = 0.2f;
@@ -19,7 +18,7 @@ public class playerMoveManager : MonoBehaviour
 
     [SerializeField] private float airRes;
     private float moveDir = 0;
-    private KeyCode lastUsedKey;
+    private float movementInput;
     // for timer
     private bool onMoving;
     private float accTimer;
@@ -28,32 +27,35 @@ public class playerMoveManager : MonoBehaviour
     private float firstSpeed;
     private float stillVelocity;
 
+    public void calcWallSliding()
+    {
+        if(((GroundCheckBox.now.isleftWall && movementInput == -1) || (GroundCheckBox.now.isrightWall && movementInput == 1)) && PlayerController.now.rigid.velocity.y<0)
+        {
+            wallSliding = true;
+        }
+        else
+        {
+            wallSliding = false;
+        }
+    }
+
     public void calcMove()
     {
-        int movementInput = 0;
-        // revise manipluation comfortability
-        if (Input.GetKey(leftKey) && Input.GetKey(rightKey))
-        {
-            if (leftKey == lastUsedKey)
-                movementInput = -1;
-            else
-                movementInput = 1;
-        }
-        else if (Input.GetKey(leftKey))
+        movementInput = 0;
+        if(PlayerController.now.kM.get(PlayerController.KeyState.left))
         {
             movementInput = -1;
         }
-        else if (Input.GetKey(rightKey))
+        else if (PlayerController.now.kM.get(PlayerController.KeyState.right))
         {
             movementInput = 1;
         }
-        if (Input.GetKeyDown(leftKey))
-            lastUsedKey = leftKey;
-        else if (Input.GetKeyDown(rightKey))
-            lastUsedKey = rightKey;
 
+        // revise manipluation comfortability
         onMoving = movementInput == moveDir;
 
+        // wall sliding calc
+        calcWallSliding();
 
         // actual velocity changes
         if (GroundCheckBox.now.IsGrounded)
@@ -77,7 +79,6 @@ public class playerMoveManager : MonoBehaviour
                 var t = Mathf.Clamp(desTimer / desTime, 0, 1);
                 var speed = desCurve.Evaluate(t);
                 PlayerController.now.rigid.velocity = new Vector2(firstSpeed * speed, PlayerController.now.rigid.velocity.y);
-                Debug.Log(speed);
             }
 
             if (onMoving && moveDir !=0)
@@ -90,6 +91,11 @@ public class playerMoveManager : MonoBehaviour
             {
                 accTimer = 0;
                 desTimer += Time.deltaTime;
+            }
+
+            if (!onMoving)
+            {
+                accTimer = 0;
             }
         }
         else
