@@ -5,7 +5,7 @@ using UnityEngine;
 public class playerJumpManager : MonoBehaviour
 {
     public static playerJumpManager now;
-
+    public float FlickerIntense = 0;
 
     [Header("Jump")]
     [SerializeField] private float jumpBufferTime = 0.1f;
@@ -36,6 +36,8 @@ public class playerJumpManager : MonoBehaviour
     {
         JumpInput();
         JumpAction();
+
+        FlickerIntense = (float)(maxJumpCount-jumpCount) / (float)maxJumpCount;
     }
 
     private void JumpInput()
@@ -59,7 +61,7 @@ public class playerJumpManager : MonoBehaviour
     private void JumpAction()
     {
 
-        if (GroundCheckBox.now.IsGrounded)
+        if (GroundCheckBox.now.IsGrounded && PlayerController.now.rigid.velocity.y <=0)
         {
             jumpCount = 0;
             jumpCooldownTimer = jumpCooldown;
@@ -77,7 +79,9 @@ public class playerJumpManager : MonoBehaviour
             isJumpingFrame = true;
             jumpCount++;
             jumpBufferCounter = 0;
-            firstJump = false;
+
+            if(jumpCount>1)
+                firstJump = false;
 
             // particle
             ParticleManager.Play("jump", transform.position);

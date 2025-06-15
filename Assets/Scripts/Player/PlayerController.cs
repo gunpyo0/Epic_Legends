@@ -12,9 +12,10 @@ public class PlayerController : MonoBehaviour
     [Header("key setting")]
     [SerializeField] private KeyCode leftKey = KeyCode.A;
     [SerializeField] private KeyCode rightKey = KeyCode.D;
-    [SerializeField] private KeyCode jumpKey = KeyCode.Space;
-    [SerializeField] private KeyCode upKey = KeyCode.W;
+    [SerializeField] private KeyCode jumpKey = KeyCode.W;
+    [SerializeField] private KeyCode upKey = KeyCode.Q;
     [SerializeField] private KeyCode downKey = KeyCode.S;
+    [SerializeField] private KeyCode dashKey = KeyCode.Space;
 
     private KeyCode lastUsedMoveKey;
 
@@ -26,6 +27,7 @@ public class PlayerController : MonoBehaviour
         firstPressJump,
         jump,
         ignoreSemiGround,
+        dash,
     }
 
     public class KeyManager
@@ -102,6 +104,12 @@ public class PlayerController : MonoBehaviour
         else if (Input.GetKey(jumpKey))
         {
             kM.setKeyState(KeyState.jump);
+        }
+
+        // dash
+        if (Input.GetKeyDown(dashKey))
+        {
+            kM.setKeyState(KeyState.dash);
         }
     }
 

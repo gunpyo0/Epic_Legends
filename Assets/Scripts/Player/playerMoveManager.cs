@@ -1,5 +1,6 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class playerMoveManager : MonoBehaviour
@@ -10,26 +11,24 @@ public class playerMoveManager : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float maxSpeed;
 
-    [SerializeField] private float accTime = 0.2f;
-    [SerializeField] private AnimationCurve accCurve;
-
-    [SerializeField] private float desTime= 0.2f;
-    [SerializeField] private AnimationCurve desCurve;
-
+    [SerializeField] private float speedToMax;
     [SerializeField] private float airRes;
+
+    [Header("turn")]
+    [SerializeField] private float turnSpeed;
+    [SerializeField] private float turnTime;
+    float turnTimer = 0;
+    bool isTurning = false;
+    float turnDir = 0;
+
     private float moveDir = 0;
     private float movementInput;
     // for timer
     private bool onMoving;
-    private float accTimer;
-    private float desTimer;
-
-    private float firstSpeed;
-    private float stillVelocity;
 
     public void calcWallSliding()
     {
-        if(((GroundCheckBox.now.isleftWall && movementInput == -1) || (GroundCheckBox.now.isrightWall && movementInput == 1)) && PlayerController.now.rigid.velocity.y<0)
+        if (((GroundCheckBox.now.isleftWall && movementInput == -1) || (GroundCheckBox.now.isrightWall && movementInput == 1)) && PlayerController.now.rigid.velocity.y < 0)
         {
             wallSliding = true;
         }
@@ -42,7 +41,7 @@ public class playerMoveManager : MonoBehaviour
     public void calcMove()
     {
         movementInput = 0;
-        if(PlayerController.now.kM.get(PlayerController.KeyState.left))
+        if (PlayerController.now.kM.get(PlayerController.KeyState.left))
         {
             movementInput = -1;
         }
@@ -60,43 +59,32 @@ public class playerMoveManager : MonoBehaviour
         // actual velocity changes
         if (GroundCheckBox.now.IsGrounded)
         {
-            if (accTimer != 0 && moveDir==0)
+            if(isTurning)
+                turnTimer += Time.deltaTime;
+
+            if(isTurning && turnTimer >= turnTime)
             {
-                firstSpeed = PlayerController.now.rigid.velocity.x;
+                isTurning = false;
+                turnTimer = 0;
             }
 
-            //acc
-            if (moveDir != 0)
+            var nowSpeed = PlayerController.now.rigid.velocity.x;
+            var targetSpeed = movementInput * speedToMax;
+
+            PlayerController.now.rigid.AddForce(new Vector2(targetSpeed * (maxSpeed - Mathf.Abs(nowSpeed)) / maxSpeed, 0), ForceMode2D.Force);
+
+            if(isTurning)
             {
-                var t = Mathf.Clamp(accTimer / accTime, 0, 1);
-                var speed = accCurve.Evaluate(t) * maxSpeed;
-                PlayerController.now.rigid.velocity = new Vector2(moveDir * speed, PlayerController.now.rigid.velocity.y);
+                isTurning = false;
+                turnTimer = 0;
+                PlayerController.now.rigid.AddForce(new Vector2(targetSpeed * turnSpeed, 0), ForceMode2D.Impulse);
             }
 
-            //des
-            else
+            if(moveDir != movementInput && moveDir != 0)
             {
-                var t = Mathf.Clamp(desTimer / desTime, 0, 1);
-                var speed = desCurve.Evaluate(t);
-                PlayerController.now.rigid.velocity = new Vector2(firstSpeed * speed, PlayerController.now.rigid.velocity.y);
-            }
-
-            if (onMoving && moveDir !=0)
-            {
-                accTimer += Time.deltaTime;
-                desTimer = 0;
-
-            }
-            if (moveDir == 0)
-            {
-                accTimer = 0;
-                desTimer += Time.deltaTime;
-            }
-
-            if (!onMoving)
-            {
-                accTimer = 0;
-                firstSpeed = PlayerController.now.rigid.velocity.x;//t4est
+                turnDir = movementInput;
+                turnTimer = 0;
+                isTurning = true;
             }
         }
         else
@@ -107,9 +95,10 @@ public class playerMoveManager : MonoBehaviour
             }
             else
             {
-                PlayerController.now.rigid.AddForce(Vector2.right * movementInput * maxSpeed * airRes, ForceMode2D.Force);
+                var nowSpeed = PlayerController.now.rigid.velocity.x;
+                var targetSpeed = movementInput * speedToMax;
+                PlayerController.now.rigid.AddForce(new Vector2(targetSpeed * (maxSpeed - Mathf.Abs(nowSpeed)) / maxSpeed, 0), ForceMode2D.Force);
             }
-            PlayerController.now.rigid.velocity = new Vector2(Mathf.Clamp(PlayerController.now.rigid.velocity.x, -maxSpeed, maxSpeed), PlayerController.now.rigid.velocity.y);
         }
         moveDir = movementInput;
     }
