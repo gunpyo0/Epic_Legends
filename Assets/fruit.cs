@@ -12,9 +12,10 @@ public class fruit : MonoBehaviour, dashable
         spriteR = GetComponent<SpriteRenderer>();
     }
 
-    public void triggered()
+    public void triggered(GameObject player)
     {
         spriteR.sprite = activeTex;
+        player.GetComponent<playerJumpManager>().resetJumpCount(0); // 플레이어 초기화
     }
 
     // Start is called before the first frame update

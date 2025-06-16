@@ -5,5 +5,5 @@ using UnityEngine;
 public interface dashable
 {
 
-    public void triggered();
+    public void triggered(GameObject player);
 }

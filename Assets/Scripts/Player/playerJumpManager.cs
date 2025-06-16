@@ -40,6 +40,15 @@ public class playerJumpManager : MonoBehaviour
         FlickerIntense = (float)(maxJumpCount-jumpCount) / (float)maxJumpCount;
     }
 
+    public void resetJumpCount(int count)
+    {
+        jumpCount = count;
+        jumpCooldownTimer = jumpCooldown;
+
+        if(count ==0)
+            firstJump = true;
+    }
+
     private void JumpInput()
     {
         if (PlayerController.now.kM.get(PlayerController.KeyState.firstPressJump))
@@ -63,9 +72,7 @@ public class playerJumpManager : MonoBehaviour
 
         if (GroundCheckBox.now.IsGrounded && PlayerController.now.rigid.velocity.y <=0)
         {
-            jumpCount = 0;
-            jumpCooldownTimer = jumpCooldown;
-            firstJump = true;
+            resetJumpCount(0);
         }
         if (jumpBufferCounter >= 0 && (jumpCount < maxJumpCount) && (jumpCooldownTimer >= jumpCooldown))
         {

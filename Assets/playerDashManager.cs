@@ -5,21 +5,42 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Rigidbody2D))]
 public class playerDashManager : MonoBehaviour
 {
-    [Header("Dash Settings")]
+    [Header("Search Settings")]
     public FireflyBehaviourSmooth inspectorM;
     public float dashRange = 3f;          // 검색 반경
-    public float dashForce = 20f;         // AddForce(Impulse) 크기
-    public float dashDuration = 0.15f;       // 대쉬 유지 시간
+    public float velocityPreservedDashRange = 0.5f;          // 검색 반경, 편의성을 위해 어느정도 가까이 있으면 현재 방향으로 진행
     public LayerMask dashMask = ~0;          // 검색 레이어
 
+    [Header("Dash Settings")]
+    public float maxDashForce = 20f;
+    public float dashDuration = 0.7f; // 대쉬 지속 시간
+    public AnimationCurve dashCurve; // 대쉬 파워 곡선
+
+    public float dashCooldown = 1f; // 대쉬 쿨타임
+    public float dashTriggerRange = 0.5f; // 대쉬 대상 객체 트리거 범위
+    Timer cooldown;
+
     Rigidbody2D rb;
+    playerJumpManager jumpM;
 
     bool isDashing;
     float dashTimer;
-    Vector2 dashDir;
-    dashable currentTarget;
+    Vector2 dashPower;
 
-    void Awake() => rb = GetComponent<Rigidbody2D>();
+    bool isTriggered;
+    dashable currentTarget;
+    Transform currentTargetTrans;
+
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        jumpM = GetComponent<playerJumpManager>();
+    }
+
+    private void Start()
+    {
+        cooldown = new Timer(0);
+    }
 
     void LateUpdate()
     {
@@ -27,23 +48,59 @@ public class playerDashManager : MonoBehaviour
 
         if(dashobj != null)
         {
-            Debug.Log($"Dashable found: {dashobj} at {dashTrans.position}");
             inspectorM.SetCenter(dashTrans, FireflyBehaviourSmooth.CenterType.target);
         }
         else
             inspectorM.SetCenter(transform, FireflyBehaviourSmooth.CenterType.main);
 
-        if (!isDashing && PlayerController.now.kM.get(PlayerController.KeyState.dash) && dashobj != null)
-            TryBeginDash(dashobj,dashTrans);
+        if (!isDashing && PlayerController.now.kM.get(PlayerController.KeyState.dash) && dashobj != null && cooldown.check())
+        {
+            TryBeginDash(dashobj, dashTrans, Vector2.Distance(dashTrans.position, transform.position) <= velocityPreservedDashRange);
+        }
+            
     }
 
     void FixedUpdate()
     {
         if (!isDashing) return;
-
+        calcDashForce();
         dashTimer += Time.fixedDeltaTime;
-        if (dashTimer >= dashDuration)
-            EndDash();
+
+        if (Vector2.Distance(transform.position, currentTargetTrans.position) <= dashTriggerRange && !isTriggered)
+        {
+            // 대쉬 대상이 멀어지면 대쉬 취소
+            currentTarget.triggered(transform.gameObject);
+            isTriggered = true;
+        }
+
+        if (dashTimer > dashDuration || PlayerController.now.kM.get(PlayerController.KeyState.jump))
+        {
+            // dash finished
+            FinishDash();
+        }
+    }
+
+    public void dash(Vector2 dashPos, bool preserve)
+    {
+        isDashing = true;
+        dashTimer = 0f;
+
+        var dir =Vector2.zero;
+        if (preserve)
+        {
+            dir = rb.velocity.normalized;
+        }
+        else
+            dir = (dashPos - (Vector2)transform.position).normalized;
+        dashPower =  dir * maxDashForce;
+    }
+
+    public void calcDashForce()
+    {
+        var t = dashTimer / dashDuration;
+        var multPower = dashCurve.Evaluate(t);
+        rb.velocity = dashPower * multPower;
+
     }
 
     (dashable, Transform) findDashable()
@@ -72,33 +129,25 @@ public class playerDashManager : MonoBehaviour
     }
 
     /*────────────────────── Dash Logic ──────────────────────*/
-    void TryBeginDash(dashable best, Transform bestTrans)
+    void TryBeginDash(dashable best, Transform bestTrans, bool preserve)
     {
-       
 
         // 2) 대상 있으면 Firefly target 갱신 + 대쉬
         if (best != null)
         {
 
-            dashDir = ((Vector2)bestTrans.position - (Vector2)transform.position).normalized;
-            rb.AddForce(dashDir * dashForce, ForceMode2D.Impulse);
-
-            isDashing = true;
-            dashTimer = 0f;
             currentTarget = best;
+            currentTargetTrans = bestTrans;
+            isTriggered = false;
+
+            dash(bestTrans.position, preserve);
         }
     }
 
-    void EndDash()
+    void FinishDash()
     {
-        rb.velocity = Vector2.zero;
         isDashing = false;
-
-        if (currentTarget != null)
-        {
-            currentTarget.triggered();
-            currentTarget = null;
-        }
+        cooldown.reset(dashCooldown);
     }
 
     /*────────────────────── Gizmos ──────────────────────*/
@@ -106,5 +155,8 @@ public class playerDashManager : MonoBehaviour
     {
         Gizmos.color = Color.magenta;
         Gizmos.DrawWireSphere(transform.position, dashRange);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, velocityPreservedDashRange);
     }
 }
