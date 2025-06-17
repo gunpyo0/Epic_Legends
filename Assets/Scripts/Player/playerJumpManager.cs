@@ -121,7 +121,6 @@ public class playerJumpManager : MonoBehaviour
 
         }
     }
-
     private void Awake()
     {
         if (now == null)
